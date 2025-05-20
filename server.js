@@ -39,20 +39,47 @@ transporter.verify(function(error, success) {
 // Gallery endpoint
 app.get('/api/gallery', (req, res) => {
   const galleryDir = path.join(__dirname, 'gallery');
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = 9;
+  
+  console.log('Gallery directory:', galleryDir);
+  console.log('Page:', page, 'Items per page:', itemsPerPage);
   
   if (!fs.existsSync(galleryDir)) {
+    console.log('Gallery directory does not exist, creating it...');
     fs.mkdirSync(galleryDir);
-    return res.json([]);
+    return res.json({ items: [], total: 0, totalPages: 0 });
   }
 
-  const files = fs.readdirSync(galleryDir)
+  const files = fs.readdirSync(galleryDir);
+  console.log('Found files in gallery:', files);
+
+  const galleryData = files
     .filter(file => file.endsWith('.json'))
     .map(file => {
       const content = fs.readFileSync(path.join(galleryDir, file), 'utf8');
       return JSON.parse(content);
     });
 
-  res.json(files);
+  const total = galleryData.length;
+  const totalPages = Math.ceil(total / itemsPerPage);
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = galleryData.slice(startIndex, endIndex);
+
+  console.log('Sending gallery data:', {
+    page,
+    total,
+    totalPages,
+    itemsCount: paginatedData.length
+  });
+
+  res.json({
+    items: paginatedData,
+    total,
+    totalPages,
+    currentPage: page
+  });
 });
 
 // API Routes

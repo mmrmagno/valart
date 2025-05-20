@@ -191,6 +191,42 @@ const LoadingText = styled.p`
   }
 `;
 
+// Add new styled components for pagination
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  gap: 10px;
+`;
+
+const PageButton = styled.button<{ active?: boolean }>`
+  background-color: ${props => props.active ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.theme.colors.tertiary};
+  border: 2px solid ${props => props.theme.colors.primary};
+  padding: 8px 16px;
+  border-radius: ${props => props.theme.borderRadius};
+  cursor: pointer;
+  transition: ${props => props.theme.transition};
+  font-weight: ${props => props.active ? 'bold' : 'normal'};
+
+  &:hover {
+    background-color: ${props => props.theme.colors.primary};
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const PageInfo = styled.span`
+  color: ${props => props.theme.colors.tertiary};
+  margin: 0 10px;
+`;
+
 // Default ASCII art examples with improved designs
 const defaultAsciiArts: AsciiArt[] = [
   {
@@ -199,91 +235,105 @@ const defaultAsciiArts: AsciiArt[] = [
 `────────────████████────── 
 ───────────██████████───── 
 ──────────█▄▄▄████▄▄▄█──── 
-─────▄───█░░░░░██░░░░░█─── 
-─────█──░░░▓■▓░░░░▓■▓░░░── 
-─────█──▐█░▓▓▓░██░▓▓▓░█▌── 
-─────█──▐██░░░████░░░██▌── 
-─────█──▐█▛██████████▛█▌── 
-──▌▌▌▄▄──██▚████████▞██─── 
-──▌▌▌▀█──████▀████▀████─── 
-──▄▄▄██───████▄■■▄████──── 
-──▜███▛────██████████───── 
-───███──────████████──────`,
-    author: 'Nerd',
-    createdAt: new Date().toISOString(),
-    gridSize: { width: 32, height: 13 }
+─────────█▀▀▀████▀▀▀█───── 
+─────────█▄▄▄████▄▄▄█───── 
+──────────██████████────── 
+───────────████████─────── 
+────────────██████──────── 
+─────────────████───────── 
+──────────────██──────────`,
+    author: 'VALORANT',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    gridSize: {
+      width: 30,
+      height: 10
+    }
   },
   {
     id: '2',
     art: 
-`▒▒▒▒▒▒▒▄██████████▄▒▒▒▒▒▒
-▒▒▒▒▒▒▄██████████████▄▒▒▒▒
-▒▒▒▒██████████████████▒▒▒▒
-▒▒▒▐███▀▀▀▀▀██▀▀▀▀▀███▌▒▒▒
-▒▒▒███▒▒▌■▐▒▒▒▒▌■▐▒▒███▒▒▒
-▒▒▒▐██▄▒▀▀▀▒▒▒▒▀▀▀▒▄██▌▒▒▒
-▒▒▒▒▀████▒▄▄▒▒▄▄▒████▀▒▒▒▒
-▒▒▒▒▒▐███▒▒▒▀▒▒▀▒▒▒███▌▒▒▒
-▒▒▒▒▒▒███▒▒▒▒▒▒▒▒▒▒▒███▒▒▒
-▒▒▒▒▒▒▒██▒▒▀▀▀▀▀▀▀▀▒▒██▒▒▒
-▒▒▒▒▒▒▒▐██▄▒▒▒▒▒▒▒▒▄██▌▒▒▒
-▒▒▒▒▒▒▒▒▀████████████▀▒▒▒▒`,
-    author: 'Gorilla',
-    createdAt: new Date().toISOString(),
-    gridSize: { width: 28, height: 12 }
+`░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░█░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░█░░░░░░░░░
+░░░░░░░░░░█░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░`,
+    author: 'Test User',
+    createdAt: '2024-01-02T00:00:00.000Z',
+    gridSize: {
+      width: 26,
+      height: 7
+    }
   },
   {
     id: '3',
     art: 
-`░░░░█░░░░░░░█░░░░░░░░░░░░
-░░░░█░█░░░░░█░█░░░░░░░░██
-░░░░░█░░░░░█░░█████░░█░░
-░░░█░░█░░░█░░░░░░░░░░░█░
-░░░█░░█░░░█░░█░░░█░░█░░░
-░░█░░░░░░█░░█░░█░░░░░█░░
-░░░███░░░█░██░░█░░░░█░█░
-░░░░░█░█░░█░░░█░░░░░░░░░
-░░░░░░██░█░░░░█░░░░░░░░░
-░░░░░░░░█░░░░█░░░░░░░░░░
-░░░░░░░█░░░░░░█░░░░░░░░░
-░░░░░░█░░░░░░░░█░░██░░██
-░░████░░██░█░░░░░░░░░░░░
-░░░░██░░██░░░░██░░██░░░░`,
-    author: 'Cat',
-    createdAt: new Date().toISOString(),
-    gridSize: { width: 26, height: 14 }
+`░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░`,
+    author: 'Another User',
+    createdAt: '2024-01-03T00:00:00.000Z',
+    gridSize: {
+      width: 26,
+      height: 7
+    }
   },
   {
     id: '4',
     art: 
-`░░░░░░░░░███████░░░░░░░░
-░░░░░░░░░█░░░░░░░█░░░░░░
-░░░░░░░░░█░░░░░░░░░█░░░░
-░░░░░░░░░█░░░███████░░░░
-░░░░░░░░░█░░█░░░███░█░░░
-░░░░░░░░███░░█░░░░██░█░░
-░░░░░░░░█░░█░░█░░░░░░░█░
-░░░░░░░░█░░█░░█░░░░░░░█░
-░░░░░░░░█░░█░░░███████░░
-░░░░░░░░█░░█░░░░░░░░░█░░
-░░░░░░░░█░░█░░░░░░░░░█░░
-░░░░░░░░█░░█░░░░░░░░░█░░
-░░░░░░░░█░░█░░░░░░░░░█░░`,
-    author: 'Amongus',
-    createdAt: new Date().toISOString(),
-    gridSize: { width: 26, height: 13 }
+`░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░`,
+    author: 'Yet Another User',
+    createdAt: '2024-01-04T00:00:00.000Z',
+    gridSize: {
+      width: 26,
+      height: 7
+    }
   }
 ];
 
 const HomePage: React.FC = () => {
   const [asciiArts, setAsciiArts] = useState<AsciiArt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const galleryData = await loadGallery();
-        setAsciiArts(galleryData);
+        setLoading(true);
+        const { items, totalPages: pages } = await loadGallery(currentPage);
+        
+        // Combine default arts with gallery data
+        const combinedArts = [...defaultAsciiArts];
+        
+        // Add gallery items that don't already exist in default arts
+        items.forEach(galleryItem => {
+          const isDuplicate = combinedArts.some(defaultItem => 
+            defaultItem.art === galleryItem.art && 
+            defaultItem.author === galleryItem.author
+          );
+          
+          if (!isDuplicate) {
+            combinedArts.push({
+              ...galleryItem,
+              id: galleryItem.id || Math.random().toString(36).substr(2, 9)
+            });
+          }
+        });
+
+        setAsciiArts(combinedArts);
+        setTotalPages(pages);
       } catch (error) {
         console.error('Error loading gallery:', error);
         setAsciiArts(defaultAsciiArts);
@@ -293,7 +343,12 @@ const HomePage: React.FC = () => {
     };
 
     fetchGallery();
-  }, []);
+  }, [currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <PageContainer>
@@ -312,11 +367,32 @@ const HomePage: React.FC = () => {
         {loading ? (
           <LoadingText>Loading gallery</LoadingText>
         ) : (
-          <GalleryGrid>
-            {asciiArts.map((art) => (
-              <AsciiArtCard key={art.id} art={art} />
-            ))}
-          </GalleryGrid>
+          <>
+            <GalleryGrid>
+              {asciiArts.map((art) => (
+                <AsciiArtCard key={art.id} art={art} />
+              ))}
+            </GalleryGrid>
+            {totalPages > 1 && (
+              <PaginationContainer>
+                <PageButton 
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </PageButton>
+                <PageInfo>
+                  Page {currentPage} of {totalPages}
+                </PageInfo>
+                <PageButton 
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </PageButton>
+              </PaginationContainer>
+            )}
+          </>
         )}
       </GallerySection>
     </PageContainer>
