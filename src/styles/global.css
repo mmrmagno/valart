@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #0f1923;
+  color: #ece8e1;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Valorant-style heading font for titles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Tungsten Bold", "DINNextW1G", "Arial Narrow", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: #ece8e1;
+}
+
+h1 {
+  font-size: 4rem;
+}
+
+h2 {
+  font-size: 3rem;
+}
+
+a {
+  color: #ff4655;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #ff7f89;
+}
+
+/* Container for app content */
+.app-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+main {
+  padding: 20px 0;
+}
+
+button {
+  background-color: #ff4655;
+  color: #ece8e1;
+  border: none;
+  padding: 12px 25px;
+  cursor: pointer;
+  font-family: "DINNextW1G", Arial, sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+button:hover {
+  background-color: #ff5c69;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+input, textarea, select {
+  background-color: #1f2326;
+  border: 1px solid #3f3f3f;
+  color: #ece8e1;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-family: "DINNextW1G", Arial, sans-serif;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #ff4655;
+  outline: none;
+}
+
+/* Custom slider styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  background: #1f2326;
+  outline: none;
+  overflow: hidden;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff4655;
+  cursor: pointer;
+  box-shadow: -400px 0 0 390px #ff4655;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff4655;
+  cursor: pointer;
+  box-shadow: -400px 0 0 390px #ff4655;
+}
+
+/* Radio button styling */
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #3f3f3f;
+  border-radius: 50%;
+  margin-right: 8px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="radio"]:checked {
+  border-color: #ff4655;
+}
+
+input[type="radio"]:checked:after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff4655;
+}
+
+/* Grid styles - significantly improved */
+.ascii-grid {
+  display: grid;
+  gap: 1px;
+  background-color: #1f2326;
+  border: 1px solid #ff4655;
+  box-shadow: 0 0 15px rgba(255, 70, 85, 0.2);
+}
+
+.grid-cell {
+  background-color: #0f1923;
+  transition: background-color 0.1s ease;
+  width: 25px;
+  height: 25px;
+}
+
+.grid-cell.filled {
+  background-color: #ff4655;
+}
+
+.grid-cell:hover {
+  background-color: rgba(255, 70, 85, 0.3);
+}
+
+.grid-cell.filled:hover {
+  background-color: #ff5c69;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Valorant-style element with sharp angles */
+.valorant-box {
+  position: relative;
+  padding: 2rem;
+  background-color: #1f2326;
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+  border-left: 3px solid #ff4655;
+} 
