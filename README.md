@@ -4,7 +4,7 @@
 
 A modern, Valorant-themed website for creating, sharing, and exploring ASCII art.
 
-Try it out at [val.marc-os.com](https://val.marc-os.com)!
+Try it out [here](https://val.marc-os.com)!
 
 ## ✨ Features
 
