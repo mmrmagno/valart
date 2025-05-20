@@ -1,8 +1,9 @@
 
-# VALART - ASCII Art for Valorant Fans
-
 <div align="center">
-  <img src="public/favicon.svg" width="100" alt="Valart Logo">
+  <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <img src="public/favicon.svg" width="50" alt="Valart Logo">
+    <h1>VALART - ASCII Art for Valorant Fans</h1>
+  </div>
 </div>
 
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
