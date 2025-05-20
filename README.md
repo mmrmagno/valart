@@ -6,7 +6,7 @@
 ![Styled Components](https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
-[![Uptime Status](https://uptime.marc-os.com/api/badge/13/status?style=for-the-badge)
+![Uptime Status](https://uptime.marc-os.com/api/badge/13/status?style=for-the-badge)
 
 
 A modern, Valorant-themed website for creating, sharing, and exploring ASCII art.
