@@ -1,21 +1,15 @@
-const fs = require('fs');
-const path = require('path');
+import axios from 'axios';
 
-const GALLERY_DIR = path.join(__dirname, '../../gallery');
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
-function loadGallery() {
-  if (!fs.existsSync(GALLERY_DIR)) {
-    fs.mkdirSync(GALLERY_DIR);
+async function loadGallery() {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/gallery`);
+    return response.data;
+  } catch (error) {
+    console.error('Error loading gallery:', error);
     return [];
   }
-
-  const files = fs.readdirSync(GALLERY_DIR);
-  return files
-    .filter(file => file.endsWith('.json'))
-    .map(file => {
-      const content = fs.readFileSync(path.join(GALLERY_DIR, file), 'utf8');
-      return JSON.parse(content);
-    });
 }
 
-module.exports = { loadGallery }; 
+export { loadGallery }; 

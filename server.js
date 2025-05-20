@@ -36,6 +36,25 @@ transporter.verify(function(error, success) {
   }
 });
 
+// Gallery endpoint
+app.get('/api/gallery', (req, res) => {
+  const galleryDir = path.join(__dirname, 'gallery');
+  
+  if (!fs.existsSync(galleryDir)) {
+    fs.mkdirSync(galleryDir);
+    return res.json([]);
+  }
+
+  const files = fs.readdirSync(galleryDir)
+    .filter(file => file.endsWith('.json'))
+    .map(file => {
+      const content = fs.readFileSync(path.join(galleryDir, file), 'utf8');
+      return JSON.parse(content);
+    });
+
+  res.json(files);
+});
+
 // API Routes
 app.post('/api/submit', async (req, res) => {
   const { authorName, creationName, art, gridSize, authorEmail } = req.body;

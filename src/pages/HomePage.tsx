@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import AsciiArtCard from '../components/AsciiArtCard';
 import { Link } from 'react-router-dom';
+import { loadGallery } from '../utils/galleryLoader';
 
 // Types
 interface AsciiArt {
@@ -279,14 +280,19 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
-    // For now, we'll use our default examples with a slight delay to simulate loading
-    const timer = setTimeout(() => {
-      setAsciiArts(defaultAsciiArts);
-      setLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
+    const fetchGallery = async () => {
+      try {
+        const galleryData = await loadGallery();
+        setAsciiArts(galleryData);
+      } catch (error) {
+        console.error('Error loading gallery:', error);
+        setAsciiArts(defaultAsciiArts);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
   }, []);
 
   return (
@@ -298,17 +304,16 @@ const HomePage: React.FC = () => {
           Create and explore ASCII art inspired by Valorant. 
           Express your creativity with our easy-to-use drawing tool and share your creations with the community.
         </Subtitle>
-        <CreateButton to="/create">Start Creating</CreateButton>
+        <CreateButton to="/create">Create Art</CreateButton>
       </HeroSection>
 
       <GallerySection>
         <GalleryHeader>Gallery</GalleryHeader>
-        
         {loading ? (
           <LoadingText>Loading gallery</LoadingText>
         ) : (
           <GalleryGrid>
-            {asciiArts.map(art => (
+            {asciiArts.map((art) => (
               <AsciiArtCard key={art.id} art={art} />
             ))}
           </GalleryGrid>
