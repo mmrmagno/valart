@@ -13,7 +13,12 @@ interface SubmissionData {
   email?: string;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://valart:3001';
+// Get API URL from environment variable
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+
+if (!API_BASE_URL) {
+  console.error('REACT_APP_API_URL is not defined in environment variables');
+}
 
 const api = {
   /**
