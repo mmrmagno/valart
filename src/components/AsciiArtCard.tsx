@@ -7,8 +7,9 @@ interface AsciiArt {
   id: string;
   art: string;
   author: string;
-  createdAt: string;
-  name?: string;  // Add optional name field
+  createdAt?: string;
+  submittedAt?: string;
+  name?: string;
   gridSize: {
     width: number;
     height: number;
@@ -156,13 +157,20 @@ const AsciiArtCard: React.FC<AsciiArtCardProps> = ({ art }) => {
     // No alert to avoid interruption
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'No date';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid Date';
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   };
 
   // Use the art's name if it exists, otherwise generate a name for default arts
@@ -182,6 +190,11 @@ const AsciiArtCard: React.FC<AsciiArtCardProps> = ({ art }) => {
     return names[index];
   };
 
+  // Get the date from either createdAt or submittedAt
+  const getDate = () => {
+    return formatDate(art.createdAt || art.submittedAt);
+  };
+
   return (
     <Card>
       <ArtTitle>{getArtName()}</ArtTitle>
@@ -193,7 +206,7 @@ const AsciiArtCard: React.FC<AsciiArtCardProps> = ({ art }) => {
         </Button>
         <AuthorInfo>
           <AuthorName>By: {art.author}</AuthorName>
-          <DateInfo>{formatDate(art.createdAt)}</DateInfo>
+          <DateInfo>{getDate()}</DateInfo>
         </AuthorInfo>
         <GridSize>Grid size: {art.gridSize.width} x {art.gridSize.height}</GridSize>
       </ArtInfo>
