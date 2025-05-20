@@ -2,7 +2,7 @@
 <div align="center">
   <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
     <img src="public/favicon.svg" width="50" alt="Valart Logo">
-    <h1>VALART - ASCII Art for Valorant Fans</h1>
+    <h1>VALART - ASCII Art drawing tool</h1>
   </div>
 </div>
 
