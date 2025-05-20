@@ -16,6 +16,23 @@ interface AsciiArt {
   };
 }
 
+interface Theme {
+  colors: {
+    primary: string;
+    tertiary: string;
+  };
+  borderRadius: string;
+  transition: string;
+}
+
+interface StyledProps {
+  theme: Theme;
+}
+
+interface PageButtonProps extends StyledProps {
+  active?: boolean;
+}
+
 // Valorant-style V SVG for background element
 const ValSVG = () => (
   <svg 
@@ -200,18 +217,18 @@ const PaginationContainer = styled.div`
   gap: 10px;
 `;
 
-const PageButton = styled.button<{ active?: boolean }>`
-  background-color: ${props => props.active ? props.theme.colors.primary : 'transparent'};
-  color: ${props => props.theme.colors.tertiary};
-  border: 2px solid ${props => props.theme.colors.primary};
+const PageButton = styled.button<PageButtonProps>`
+  background-color: ${(props: PageButtonProps) => props.active ? props.theme.colors.primary : 'transparent'};
+  color: ${(props: StyledProps) => props.theme.colors.tertiary};
+  border: 2px solid ${(props: StyledProps) => props.theme.colors.primary};
   padding: 8px 16px;
-  border-radius: ${props => props.theme.borderRadius};
+  border-radius: ${(props: StyledProps) => props.theme.borderRadius};
   cursor: pointer;
-  transition: ${props => props.theme.transition};
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  transition: ${(props: StyledProps) => props.theme.transition};
+  font-weight: ${(props: PageButtonProps) => props.active ? 'bold' : 'normal'};
 
   &:hover {
-    background-color: ${props => props.theme.colors.primary};
+    background-color: ${(props: StyledProps) => props.theme.colors.primary};
     transform: translateY(-2px);
   }
 
@@ -318,8 +335,8 @@ const HomePage: React.FC = () => {
         const combinedArts = [...defaultAsciiArts];
         
         // Add gallery items that don't already exist in default arts
-        items.forEach(galleryItem => {
-          const isDuplicate = combinedArts.some(defaultItem => 
+        items.forEach((galleryItem: AsciiArt) => {
+          const isDuplicate = combinedArts.some((defaultItem: AsciiArt) => 
             defaultItem.art === galleryItem.art && 
             defaultItem.author === galleryItem.author
           );
