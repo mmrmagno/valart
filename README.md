@@ -102,53 +102,7 @@ This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LI
 - 🎮 Inspired by the Valorant game by Riot Games
 - 💡 Project inspired by [VALORANT-Oekaki-Chat](https://github.com/RUNFUNRUN/VALORANT-Oekaki-Chat)
 
-## 🔧 Build Error Fix
-
-If you encounter the following TypeScript error during build:
-
-```
-TS2339: Property 'value' does not exist on type 'ExecutionContext & FastOmit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, never>'.
-    width: ${props => `${(props.value - 1) / 12 * 100}%`};
-```
-
-There are two ways to fix it:
-
-### Option 1: Add TypeScript interfaces for styled components
-
-Add proper type definitions for styled component props in `src/pages/CreatorPage.tsx`:
-
-```typescript
-interface SliderTrackProps {
-  value: number;
-  theme: any;
-}
-
-const SliderTrack = styled.div<SliderTrackProps>`
-  // existing styling
-`;
-
-interface SliderTickProps {
-  active: boolean;
-  value: number;
-  showLabel: boolean;
-  theme: any;
-}
-
-const SliderTick = styled.div<SliderTickProps>`
-  // existing styling
-`;
-```
-
-### Option 2: Disable TypeScript checking for the file
-
-Add `// @ts-nocheck` at the top of the `src/pages/CreatorPage.tsx` file:
-
-```typescript
-// @ts-nocheck
-import React, { useState, useEffect, useRef } from 'react';
-```
-
-## 🏃‍♂️ Running the Application
+## 🔧 Running the Application
 
 1. Build and run the container:
 ```bash
