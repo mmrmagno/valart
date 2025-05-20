@@ -157,10 +157,6 @@ docker compose down && docker compose up --build -d
 
 2. Access the application at http://localhost:3000
 
-## 📧 Email Notification
-
-The application now includes email notification functionality. When submitting ASCII art, provide your email address to receive a confirmation notification.
-
 ---
 
 <div align="center">
