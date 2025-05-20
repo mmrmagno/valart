@@ -8,6 +8,7 @@ interface AsciiArt {
   art: string;
   author: string;
   createdAt: string;
+  name?: string;  // Add optional name field
   gridSize: {
     width: number;
     height: number;
@@ -164,8 +165,12 @@ const AsciiArtCard: React.FC<AsciiArtCardProps> = ({ art }) => {
     });
   };
 
-  // Generate a random name for the art based on the author
+  // Use the art's name if it exists, otherwise generate a name for default arts
   const getArtName = () => {
+    if (art.name) {
+      return art.name;
+    }
+    
     const names = [
       `${art.author}'s Masterpiece`,
       `${art.author}'s Design`,
