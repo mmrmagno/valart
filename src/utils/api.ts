@@ -14,7 +14,7 @@ interface SubmissionData {
 }
 
 // Get API URL from environment variable
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 if (!API_BASE_URL) {
   console.error('REACT_APP_API_URL is not defined in environment variables');
@@ -28,7 +28,7 @@ const api = {
    */
   submitArt: async (data: SubmissionData) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/submit`, {
+      const response = await axios.post(`${API_BASE_URL}api/submit`, {
         authorName: data.authorName,
         creationName: data.creationName,
         art: data.art,
