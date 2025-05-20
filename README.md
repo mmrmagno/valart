@@ -22,7 +22,7 @@ Try it out [here](https://val.marc-os.com)!
 
 - 🖌️ ASCII art drawing tool with adjustable grid size and drawing modes
 - 🖼️ Gallery of ASCII art
-- 📋 Copy and download for created art
+- 📋 Copy and download created art
 - 📤 Submission system for adding new art to the gallery
 
 ## 🛠️ Tech Stack
@@ -55,16 +55,8 @@ Try it out [here](https://val.marc-os.com)!
 
 4. Build and start the Docker container:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
-
-5. Configure Nginx Proxy Manager to forward traffic to the container:
-   - Add a new proxy host in Nginx Proxy Manager
-   - Set the domain name to your preferred domain
-   - Set the scheme to `http`
-   - Set the forward hostname/IP to `valart`
-   - Set the forward port to `3001`
-   - Enable SSL if desired
 
 ## 🎯 Usage
 
