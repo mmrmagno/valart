@@ -36,26 +36,21 @@ transporter.verify(function(error, success) {
   }
 });
 
-// Gallery endpoint
-app.get('/api/gallery', (req, res) => {
+// Function to read gallery data
+const readGalleryData = () => {
   const galleryDir = path.join(__dirname, 'gallery');
-  const page = parseInt(req.query.page) || 1;
-  const itemsPerPage = 9;
-  
-  console.log('Gallery directory:', galleryDir);
-  console.log('Current working directory:', process.cwd());
-  console.log('Page:', page, 'Items per page:', itemsPerPage);
+  console.log('Reading gallery from:', galleryDir);
   
   if (!fs.existsSync(galleryDir)) {
     console.log('Gallery directory does not exist, creating it...');
     fs.mkdirSync(galleryDir, { recursive: true });
-    return res.json({ items: [], total: 0, totalPages: 0 });
+    return [];
   }
 
   const files = fs.readdirSync(galleryDir);
   console.log('Found files in gallery:', files);
 
-  const galleryData = files
+  return files
     .filter(file => file.endsWith('.json'))
     .map(file => {
       try {
@@ -71,7 +66,27 @@ app.get('/api/gallery', (req, res) => {
       }
     })
     .filter(data => data !== null);
+};
 
+// Watch for changes in the gallery directory
+const galleryDir = path.join(__dirname, 'gallery');
+fs.watch(galleryDir, (eventType, filename) => {
+  if (filename && filename.endsWith('.json')) {
+    console.log(`Gallery file ${filename} ${eventType}`);
+    // Clear require cache for the changed file
+    const filePath = path.join(galleryDir, filename);
+    delete require.cache[require.resolve(filePath)];
+  }
+});
+
+// Gallery endpoint
+app.get('/api/gallery', (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = 9;
+  
+  console.log('Page:', page, 'Items per page:', itemsPerPage);
+  
+  const galleryData = readGalleryData();
   const total = galleryData.length;
   const totalPages = Math.ceil(total / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
