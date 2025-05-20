@@ -24,6 +24,7 @@ COPY --from=build /app/package.json ./
 COPY --from=build /app/.env.example ./.env
 COPY --from=build /app/tsconfig.json ./
 COPY --from=build /app/src ./src
+COPY --from=build /app/gallery ./gallery
 
 # Install only production dependencies
 RUN npm install --only=production

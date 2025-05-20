@@ -43,11 +43,12 @@ app.get('/api/gallery', (req, res) => {
   const itemsPerPage = 9;
   
   console.log('Gallery directory:', galleryDir);
+  console.log('Current working directory:', process.cwd());
   console.log('Page:', page, 'Items per page:', itemsPerPage);
   
   if (!fs.existsSync(galleryDir)) {
     console.log('Gallery directory does not exist, creating it...');
-    fs.mkdirSync(galleryDir);
+    fs.mkdirSync(galleryDir, { recursive: true });
     return res.json({ items: [], total: 0, totalPages: 0 });
   }
 
@@ -57,9 +58,19 @@ app.get('/api/gallery', (req, res) => {
   const galleryData = files
     .filter(file => file.endsWith('.json'))
     .map(file => {
-      const content = fs.readFileSync(path.join(galleryDir, file), 'utf8');
-      return JSON.parse(content);
-    });
+      try {
+        const filePath = path.join(galleryDir, file);
+        console.log('Reading file:', filePath);
+        const content = fs.readFileSync(filePath, 'utf8');
+        const data = JSON.parse(content);
+        console.log('Parsed data from', file, ':', data);
+        return data;
+      } catch (error) {
+        console.error('Error reading file', file, ':', error);
+        return null;
+      }
+    })
+    .filter(data => data !== null);
 
   const total = galleryData.length;
   const totalPages = Math.ceil(total / itemsPerPage);
@@ -71,7 +82,8 @@ app.get('/api/gallery', (req, res) => {
     page,
     total,
     totalPages,
-    itemsCount: paginatedData.length
+    itemsCount: paginatedData.length,
+    items: paginatedData
   });
 
   res.json({
