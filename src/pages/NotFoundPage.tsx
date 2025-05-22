@@ -2,10 +2,31 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
+const glitch = keyframes`
+  0% {
+    transform: translate(0);
+    text-shadow: 0 0 10px #ff4655;
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    text-shadow: 2px 2px 10px #ff4655;
+  }
+  40% {
+    transform: translate(-2px, -2px);
+    text-shadow: 2px -2px 10px #ff4655;
+  }
+  60% {
+    transform: translate(2px, 2px);
+    text-shadow: -2px 2px 10px #ff4655;
+  }
+  80% {
+    transform: translate(2px, -2px);
+    text-shadow: -2px -2px 10px #ff4655;
+  }
+  100% {
+    transform: translate(0);
+    text-shadow: 0 0 10px #ff4655;
+  }
 `;
 
 const NotFoundContainer = styled.div`
@@ -14,41 +35,73 @@ const NotFoundContainer = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-  color: white;
+  background: #0f1923;
+  color: #ece8e1;
   text-align: center;
   padding: 20px;
+  font-family: 'DIN Next LT Pro', 'Arial', sans-serif;
 `;
 
 const ErrorCode = styled.h1`
-  font-size: 120px;
+  font-size: 150px;
   margin: 0;
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: ${float} 3s ease-in-out infinite;
+  color: #ff4655;
+  font-weight: 800;
+  letter-spacing: -5px;
+  animation: ${glitch} 2s infinite;
+  text-transform: uppercase;
 `;
 
 const Message = styled.h2`
   font-size: 24px;
   margin: 20px 0;
-  color: #e0e0e0;
+  color: #ece8e1;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+`;
+
+const SubMessage = styled.p`
+  font-size: 18px;
+  color: #8b978f;
+  margin: 10px 0;
+  max-width: 600px;
 `;
 
 const HomeButton = styled.button`
-  padding: 12px 24px;
+  padding: 15px 30px;
   font-size: 18px;
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  background: #ff4655;
   border: none;
-  border-radius: 25px;
-  color: white;
+  color: #ece8e1;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  margin-top: 30px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-top: 40px;
+  position: relative;
+  overflow: hidden;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+  }
 
   &:hover {
+    background: #ff2d3f;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(255, 70, 85, 0.3);
+
+    &:before {
+      left: 100%;
+    }
   }
 `;
 
@@ -58,10 +111,13 @@ const NotFoundPage: React.FC = () => {
   return (
     <NotFoundContainer>
       <ErrorCode>404</ErrorCode>
-      <Message>Oops! Looks like you've ventured into the void.</Message>
-      <Message>Don't worry, even the best artists sometimes miss the canvas.</Message>
+      <Message>AGENT NOT FOUND</Message>
+      <SubMessage>
+        The coordinates you're looking for don't exist in our database. 
+        Return to base and try a different approach.
+      </SubMessage>
       <HomeButton onClick={() => navigate('/')}>
-        Return to Gallery
+        Return to Base
       </HomeButton>
     </NotFoundContainer>
   );
