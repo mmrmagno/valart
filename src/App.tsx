@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import CreatorPage from './pages/CreatorPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { ThemeProvider } from 'styled-components';
 import { valorantTheme } from './styles/theme';
 
@@ -16,6 +17,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/create" element={<CreatorPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <Footer />
