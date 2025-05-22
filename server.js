@@ -8,7 +8,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
-const xss = require('xss-clean');
 const hpp = require('hpp');
 
 const app = express();
@@ -19,7 +18,6 @@ app.set('trust proxy', 1);
 
 // Security Middleware
 app.use(helmet()); // Adds various HTTP headers for security
-app.use(xss()); // Sanitize user input
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 
 // Rate limiting
@@ -125,13 +123,15 @@ const validateSubmission = [
     .isLength({ min: 1, max: 100 })
     .withMessage('Author name must be between 1 and 100 characters')
     .matches(/^[a-zA-Z0-9\s\-_]+$/)
-    .withMessage('Author name contains invalid characters'),
+    .withMessage('Author name contains invalid characters')
+    .escape(),
   body('creationName')
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Creation name must be between 1 and 100 characters')
     .matches(/^[a-zA-Z0-9\s\-_]+$/)
-    .withMessage('Creation name contains invalid characters'),
+    .withMessage('Creation name contains invalid characters')
+    .escape(),
   body('art')
     .trim()
     .isLength({ min: 1, max: 10000 })
@@ -204,22 +204,17 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
 
     const { authorName, creationName, art, gridSize, authorEmail } = req.body;
     
-    // Sanitize inputs
-    const sanitizedArt = xss(art);
-    const sanitizedAuthorName = xss(authorName);
-    const sanitizedCreationName = xss(creationName);
-
     // Create JSON data
     const artData = {
-      name: sanitizedCreationName,
-      author: sanitizedAuthorName,
-      art: sanitizedArt,
+      name: creationName,
+      author: authorName,
+      art: art,
       gridSize: gridSize,
       submittedAt: new Date().toISOString()
     };
 
     // Create a safe filename
-    const safeFileName = `${String(sanitizedCreationName).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}.json`;
+    const safeFileName = `${String(creationName).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}.json`;
     filePath = path.join(__dirname, 'temp', safeFileName);
     
     // Ensure temp directory exists with proper permissions
@@ -235,14 +230,14 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
     const adminMailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.ADMIN_EMAIL,
-      subject: `New ASCII Art Submission: "${sanitizedCreationName}"`,
-      text: `New submission from ${sanitizedAuthorName}:\n\nTitle: ${sanitizedCreationName}\n\n${sanitizedArt}\n\nGrid size: ${gridSize.width}x${gridSize.height}`,
+      subject: `New ASCII Art Submission: "${creationName}"`,
+      text: `New submission from ${authorName}:\n\nTitle: ${creationName}\n\n${art}\n\nGrid size: ${gridSize.width}x${gridSize.height}`,
       html: `
         <h1>New ASCII Art Submission</h1>
-        <p><strong>Creation:</strong> ${sanitizedCreationName}</p>
-        <p><strong>Author:</strong> ${sanitizedAuthorName}</p>
+        <p><strong>Creation:</strong> ${creationName}</p>
+        <p><strong>Author:</strong> ${authorName}</p>
         <p><strong>Author Email:</strong> ${authorEmail || 'Not provided'}</p>
-        <pre style="background: #1a1a1a; color: #ece8e1; padding: 15px; border-radius: 4px; line-height: 1; font-family: monospace;">${sanitizedArt}</pre>
+        <pre style="background: #1a1a1a; color: #ece8e1; padding: 15px; border-radius: 4px; line-height: 1; font-family: monospace;">${art}</pre>
         <p><strong>Grid size:</strong> ${gridSize.width}x${gridSize.height}</p>
         <p><strong>Instructions:</strong></p>
         <ol>
@@ -265,13 +260,13 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
       const authorMailOptions = {
         from: process.env.EMAIL_USER,
         to: authorEmail,
-        subject: `Your ASCII Art Submission: "${sanitizedCreationName}"`,
+        subject: `Your ASCII Art Submission: "${creationName}"`,
         html: `
           <h1>Thank you for your submission!</h1>
-          <p>We've received your ASCII art submission "${sanitizedCreationName}".</p>
+          <p>We've received your ASCII art submission "${creationName}".</p>
           <p>We'll review it and let you know if it's added to the gallery.</p>
           <p>Here's a preview of your submission:</p>
-          <pre style="background: #1a1a1a; color: #ece8e1; padding: 15px; border-radius: 4px; line-height: 1; font-family: monospace;">${sanitizedArt}</pre>
+          <pre style="background: #1a1a1a; color: #ece8e1; padding: 15px; border-radius: 4px; line-height: 1; font-family: monospace;">${art}</pre>
         `
       };
 
