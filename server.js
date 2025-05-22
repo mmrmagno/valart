@@ -14,6 +14,9 @@ const hpp = require('hpp');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy for rate limiter
+app.set('trust proxy', 1);
+
 // Security Middleware
 app.use(helmet()); // Adds various HTTP headers for security
 app.use(xss()); // Sanitize user input
@@ -192,6 +195,7 @@ app.get('/api/gallery', (req, res, next) => {
 
 // Submit endpoint with validation
 app.post('/api/submit', validateSubmission, async (req, res, next) => {
+  let filePath;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -215,8 +219,8 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
     };
 
     // Create a safe filename
-    const safeFileName = `${sanitizedCreationName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}.json`;
-    const filePath = path.join(__dirname, 'temp', safeFileName);
+    const safeFileName = `${String(sanitizedCreationName).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}.json`;
+    filePath = path.join(__dirname, 'temp', safeFileName);
     
     // Ensure temp directory exists with proper permissions
     const tempDir = path.join(__dirname, 'temp');
@@ -228,7 +232,6 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
     fs.writeFileSync(filePath, JSON.stringify(artData, null, 2), { mode: 0o644 });
 
     // Send email to admin
-    console.log('Attempting to send admin email...');
     const adminMailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.ADMIN_EMAIL,
@@ -259,7 +262,6 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
 
     // Send confirmation email to author if email provided
     if (authorEmail) {
-      console.log('Attempting to send author confirmation email...');
       const authorMailOptions = {
         from: process.env.EMAIL_USER,
         to: authorEmail,
@@ -282,7 +284,7 @@ app.post('/api/submit', validateSubmission, async (req, res, next) => {
     next(error);
   } finally {
     // Clean up temporary file with error handling
-    if (fs.existsSync(filePath)) {
+    if (filePath && fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
       } catch (error) {
