@@ -402,9 +402,18 @@ const CreatorPage: React.FC = () => {
   // Update grid size when resolution or height changes
   useEffect(() => {
     const width = resolution === 'FHD' ? 26 : 27;
-    setGridSize({ width, height });
-    // Reset filled cells when grid size changes
-    setFilledCells(new Set());
+    const newGridSize = { width, height };
+    setGridSize(newGridSize);
+    
+    // Preserve existing art within new dimensions
+    const newFilledCells = new Set<string>();
+    filledCells.forEach(cellKey => {
+      const [row, col] = cellKey.split('-').map(Number);
+      if (row < height && col < width) {
+        newFilledCells.add(cellKey);
+      }
+    });
+    setFilledCells(newFilledCells);
   }, [resolution, height]);
 
   // Update ASCII output whenever filled cells change
