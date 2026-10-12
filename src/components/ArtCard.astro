@@ -1,0 +1,83 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'gallery'>;
+}
+
+const { entry } = Astro.props;
+const { name, author, art, submittedAt } = entry.data;
+const artId = `art-${entry.id}`;
+const date = submittedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+
+<article class="notched">
+  <a class="frame" href={`/art/${entry.id}`} aria-label={`${name} by ${author}`}>
+    <pre class="art" id={artId}>{art}</pre>
+  </a>
+  <div class="meta">
+    <div>
+      <h3><a href={`/art/${entry.id}`}>{name}</a></h3>
+      <p>by {author} · <time datetime={submittedAt.toISOString()}>{date}</time></p>
+    </div>
+    <button class="btn ghost" type="button" data-copy={artId}>Copy</button>
+  </div>
+</article>
+
+<style>
+  article {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  article:hover {
+    border-color: var(--red);
+    transform: translateY(-3px);
+  }
+  article::before {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  article:hover::before {
+    opacity: 1;
+  }
+  .frame {
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    background: var(--surface-2);
+    overflow: auto;
+    text-decoration: none;
+    min-height: 12rem;
+  }
+  .frame .art {
+    font-size: clamp(0.7rem, 1.6vw, 0.95rem);
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+  }
+  h3 {
+    font-size: 1.35rem;
+    margin: 0;
+  }
+  h3 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>

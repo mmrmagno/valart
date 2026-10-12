@@ -15,8 +15,7 @@ credentials.json
 
 # Build output
 dist/
-build/
-gallery/*
+.astro/
 
 # IDE and editor files
 .idea/

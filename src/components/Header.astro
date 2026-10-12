@@ -1,0 +1,96 @@
+---
+const path = Astro.url.pathname;
+const links = [
+  { href: '/', label: 'Gallery' },
+  { href: '/create', label: 'Create' },
+];
+---
+
+<header>
+  <div class="bar">
+    <a class="logo" href="/" aria-label="VALART home">
+      <svg viewBox="0 0 32 32" aria-hidden="true" width="28" height="28">
+        <path d="M6 6 L16 26 L26 6" stroke="#FF4655" stroke-width="4" stroke-linejoin="bevel" fill="none"></path>
+        <path d="M10 6 L16 18 L22 6" stroke="#FF4655" stroke-width="1.5" fill="none"></path>
+      </svg>
+      <span class="word">VAL<span>ART</span></span>
+    </a>
+    <nav aria-label="Main">
+      {
+        links.map((l) => (
+          <a href={l.href} aria-current={path === l.href || path === `${l.href}/` ? 'page' : undefined}>
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  header {
+    border-bottom: 1px solid var(--line);
+    box-shadow: inset 0 2px 0 var(--red);
+    background: rgb(15 25 35 / 0.92);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    backdrop-filter: blur(6px);
+  }
+  .bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--display);
+    font-size: 1.9rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    text-decoration: none;
+    line-height: 1;
+  }
+  .word span {
+    color: var(--red);
+  }
+  nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover {
+    color: var(--text);
+  }
+  @media (max-width: 420px) {
+    .bar {
+      padding: 0.6rem 0.75rem;
+    }
+    .logo {
+      font-size: 1.55rem;
+    }
+    nav a {
+      padding: 0.5rem 0.45rem;
+      letter-spacing: 0.06em;
+    }
+  }
+  nav a[aria-current='page'] {
+    color: var(--text);
+    border-bottom-color: var(--red);
+  }
+</style>

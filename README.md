@@ -1,110 +1,65 @@
-
 <div align="center">
-  <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-    <img src="public/favicon.svg" width="50" alt="Valart Logo">
-    <h1>VALART - ASCII Art drawing tool</h1>
-  </div>
+  <img src="public/favicon.svg" width="56" alt="VALART logo">
+  <h1>VALART</h1>
+  <p>ASCII art for Valorant chat: draw it, copy it, get it into the gallery.</p>
+  <p><a href="https://val.marc-os.com">val.marc-os.com</a></p>
 </div>
 
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
-![Uptime Status](https://uptime.marc-os.com/api/badge/13/status?style=for-the-badge)
+## What it does
 
+- **Draw** on a grid sized for Valorant chat (26 columns for FHD, 27 for stretched, up to 13 lines).
+  Mouse, touch, pen and keyboard all work. Undo and redo with Ctrl+Z / Ctrl+Y.
+- **Copy** the result and paste it straight into chat, or download it as text.
+- **Submit** it to the gallery. No account needed: a submission becomes a pull request on this repo,
+  and it appears on the site once it is merged.
 
-A modern, Valorant-themed website for creating, sharing, and exploring ASCII art.
+## How it works
 
-Try it out [here](https://val.marc-os.com)!
+The site is static: [Astro](https://astro.build) renders the gallery from `src/content/gallery/*.json`
+at build time, and the drawing tool is a small React island. nginx serves the result.
 
-## ✨ Features
+Submissions go to a tiny Go service in `submit/`. It checks a Cloudflare Turnstile token, validates the
+art, rate limits, and opens a pull request through a GitHub App that can only write to this repository.
+Merging the PR publishes the art: CI builds a new image and the deployment picks it up.
 
-- 🖌️ ASCII art drawing tool with adjustable grid size and drawing modes
-- 🖼️ Gallery of ASCII art
-- 📋 Copy and download created art
-- 📤 Submission system for adding new art to the gallery
-
-## 🛠️ Tech Stack
-
-- Frontend: React, TypeScript, Styled Components
-- Backend: Node.js, Express
-- Email: Nodemailer
-- Containerization: Docker, Docker Compose
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- 🐳 Docker and Docker Compose
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/mmrmagno/valart.git
-   cd valart
-   ```
-
-2. Create a `.env` file based on the provided `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Edit the `.env` file with your email settings and other configuration.
-
-4. Build and start the Docker container:
-   ```bash
-   docker compose up -d
-   ```
-
-## 🎯 Usage
-
-### Creating ASCII Art
-
-1. Navigate to the "Create" page
-2. Set your desired resolution and height using the controls
-3. Choose between click or drag drawing mode
-4. Create your ASCII art by clicking or dragging on the grid cells
-5. Use the buttons below to copy, download, or submit your creation
-
-### Submitting Art for the Gallery
-
-1. After creating your ASCII art, fill in your name in the submission form
-2. Click "Submit for Publication"
-3. Your submission will be sent to the admin for review
-4. If approved, it will be added to the gallery
-
-## 👨‍💼 Administration
-
-When a user submits ASCII art, an email will be sent to the admin email configured in the `.env` file. The email will contain:
-
-- The author's name
-- The ASCII art
-- The grid size used
-
-To add approved submissions to the gallery, you'll need to update the default examples in the code. (Will improve enventually)
-
-## 📝 License
-
-This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgements
-
-- 🎮 Inspired by the Valorant game by Riot Games
-- 💡 Project inspired by [VALORANT-Oekaki-Chat](https://github.com/RUNFUNRUN/VALORANT-Oekaki-Chat)
-
-## 🔧 Running the Application
-
-1. Build and run the container:
-```bash
-docker compose down && docker compose up --build -d
+```
+src/content/gallery/   one JSON file per artwork, schema-checked at build
+src/pages/             gallery, /art/<id>, /create, 404
+src/components/        Creator.tsx (the drawing tool), ArtCard, Header, Footer
+submit/                the submission service (Go, standard library only)
+infra/                 nginx config and security headers
 ```
 
-2. Access the application at http://localhost:3000
+## Adding art by hand
 
----
+Add a file to `src/content/gallery/`:
 
-<div align="center">
-  <sub>Built with ❤️ by <a href="https://marc-os.com">Marc Magno</a></sub>
-</div> 
+```json
+{
+  "name": "Apple head",
+  "author": "Marc",
+  "art": "░░█░░\n░███░",
+  "gridSize": { "width": 5, "height": 2 },
+  "submittedAt": "2025-05-20T16:06:23.722Z"
+}
+```
+
+The build fails on a malformed file, so a broken entry can never take the site down.
+
+## Development
+
+```sh
+pnpm install
+pnpm dev          # http://localhost:4321
+pnpm check        # type check
+pnpm build        # static site in dist/
+
+cd submit && go test -race ./...
+```
+
+`PUBLIC_TURNSTILE_SITE_KEY` turns on the submit form at build time. Without it the form explains that
+submissions are closed and everything else works.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Not affiliated with Riot Games.
