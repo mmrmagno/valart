@@ -1,36 +1,38 @@
-FROM node:16-alpine as build
+FROM node:26-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a AS build
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json package-lock.json* ./
-RUN npm install
+# Node 25+ no longer bundles corepack. Keep in sync with "packageManager" in package.json.
+RUN npm install -g pnpm@11.28.3
 
-# Copy all files to the container
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --ignore-scripts
+
 COPY . .
+ARG PUBLIC_TURNSTILE_SITE_KEY=""
+ENV PUBLIC_TURNSTILE_SITE_KEY=$PUBLIC_TURNSTILE_SITE_KEY
+RUN pnpm check && pnpm build
 
-# Build React app
-RUN npm run build
+FROM nginx:1.31-alpine@sha256:df221db836e1754089190208cee7eeda94f233197056426eda74a43ab1abeac2 AS runtime
 
-# Production stage
-FROM node:16-alpine
+RUN rm -rf /etc/nginx/conf.d/* /usr/share/nginx/html/*
 
-WORKDIR /app
+COPY infra/nginx.conf /etc/nginx/nginx.conf
+COPY infra/security-headers.inc /etc/nginx/security-headers.inc
+COPY infra/default.conf /etc/nginx/conf.d/default.conf
 
-# Copy built files from build stage
-COPY --from=build /app/build ./build
-COPY --from=build /app/server.js ./
-COPY --from=build /app/package.json ./
-COPY --from=build /app/.env.example ./.env
-COPY --from=build /app/tsconfig.json ./
-COPY --from=build /app/src ./src
-COPY --from=build /app/gallery ./gallery
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Install only production dependencies
-RUN npm install --only=production
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R a-w /usr/share/nginx/html && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
 
-# Expose the port the app runs on
-EXPOSE 3001
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null || exit 1
 
-# Command to run the app
-CMD ["node", "server.js"]
+EXPOSE 8080
+
+USER nginx
+CMD ["nginx", "-g", "daemon off;"]

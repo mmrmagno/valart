@@ -1,0 +1,23 @@
+---
+import Base from '@/layouts/Base.astro';
+import Creator from '@/components/Creator';
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
+---
+
+<Base title="Create" description="Draw ASCII art sized for Valorant chat and copy it in one click.">
+  {turnstileSiteKey && <script slot="head" src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer is:inline />}
+  <h1 class="title">Create</h1>
+  <p class="lead">Click or drag to draw. Your first cell decides: start on an empty cell to paint, on a filled one to erase.</p>
+  <Creator client:only="react" turnstileSiteKey={turnstileSiteKey} />
+</Base>
+
+<style>
+  .title {
+    font-size: clamp(2.4rem, 6vw, 3.75rem);
+  }
+  .lead {
+    color: var(--muted);
+    margin: 0 0 1.5rem;
+  }
+</style>

@@ -1,0 +1,65 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('gallery');
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'gallery'>;
+}
+
+const { entry } = Astro.props;
+const { name, author, art, gridSize, submittedAt } = entry.data;
+const date = submittedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const download = `data:text/plain;charset=utf-8,${encodeURIComponent(art)}`;
+---
+
+<Base title={name} description={`${name} by ${author}: ASCII art for Valorant chat.`}>
+  <a class="back" href="/">← Gallery</a>
+  <h1>{name}</h1>
+  <p class="by">by {author} · {date} · {gridSize.width}×{gridSize.height}</p>
+  <div class="stage">
+    <pre class="art" id="art">{art}</pre>
+  </div>
+  <div class="actions">
+    <button class="btn" type="button" data-copy="art">Copy for chat</button>
+    <a class="btn ghost" href={download} download={`${entry.id}.txt`}>Download .txt</a>
+  </div>
+</Base>
+
+<style>
+  .back {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    margin-top: 1rem;
+  }
+  .by {
+    color: var(--muted);
+    margin: 0 0 1.5rem;
+  }
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2rem 1rem;
+    display: grid;
+    place-items: center;
+    overflow-x: auto;
+  }
+  .stage .art {
+    font-size: clamp(0.8rem, 2.6vw, 1.35rem);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+</style>

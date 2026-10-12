@@ -1,0 +1,32 @@
+---
+import Base from '@/layouts/Base.astro';
+
+const art = ['░░██░░░░████░░░░██░░', '░██░░░░██░░██░░░██░░', '██░░██░██░░██░██░██░', '██████░██░░██░██████', '░░░██░░██░░██░░░░██░', '░░░██░░░████░░░░░██░'].join('\n');
+---
+
+<Base title="Not found">
+  <div class="wrap">
+    <pre class="art" aria-hidden="true">{art}</pre>
+    <h1>Whiffed</h1>
+    <p>This page doesn't exist. The gallery does.</p>
+    <a class="btn" href="/">Back to the gallery</a>
+  </div>
+</Base>
+
+<style>
+  .wrap {
+    text-align: center;
+    padding: 3rem 0;
+  }
+  .art {
+    color: var(--red);
+    font-size: clamp(0.9rem, 3vw, 1.4rem);
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+  }
+  p {
+    color: var(--muted);
+  }
+</style>
