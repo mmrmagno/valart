@@ -115,6 +115,116 @@
   outline-offset: 2px;
 }
 
+.brushes {
+  flex-basis: 100%;
+  display: grid;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.brush-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.brush-head p {
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+  margin-right: auto;
+}
+
+.group-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.brushes fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.background {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.background legend {
+  float: left;
+}
+
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.tile-group {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tile {
+  --cell: 1.6rem;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.tile.big {
+  --cell: 2.4rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  cursor: default;
+  border-color: var(--red);
+}
+
+.tile.active {
+  border-color: var(--red);
+  color: var(--red);
+  box-shadow: inset 0 0 0 1px var(--red);
+}
+
+@media (hover: hover) {
+  .tile:not(.big):hover {
+    border-color: var(--muted);
+  }
+}
+
+.tile input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.tile:has(input:focus-visible) {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
 .height {
   display: flex;
   align-items: center;
@@ -172,6 +282,28 @@
 
 .cell {
   background: var(--surface-2);
+}
+
+.cell.glyph {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--text);
+}
+
+/* JetBrains Mono block glyphs are 0.6em wide and 1.32em tall: fit the height, stretch to a square. */
+.fit {
+  font-family: var(--mono);
+  font-size: calc(var(--cell) / 1.32);
+  line-height: 1.32;
+  transform: scaleX(2.2);
+}
+
+.letter {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: calc(var(--cell) * 0.7);
+  line-height: 1;
 }
 
 .cell.on {
@@ -283,5 +415,15 @@
   }
   .canvas .scroller {
     padding: 0;
+  }
+  .controls fieldset:not(.palette, .background) legend {
+    float: none;
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  .controls > .tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
 }

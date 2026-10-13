@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent, PointerEvent, SubmitEvent } from 'react';
 import {
+  BACKGROUNDS,
   DEFAULT_HEIGHT,
+  EMPTY,
+  FILLED,
   MAX_HEIGHT,
   MIN_HEIGHT,
   MODES,
+  INVERSE,
+  LETTER,
   NAME_MAX,
+  PALETTE,
   cellKey,
+  charName,
+  isAllowed,
+  isBoxGlyph,
   filledCount,
   toAscii,
   validName,
@@ -30,7 +39,7 @@ declare global {
   }
 }
 
-type Cells = Set<string>;
+type Cells = Map<string, string>;
 interface History {
   past: Cells[];
   present: Cells;
@@ -44,26 +53,60 @@ const HISTORY_LIMIT = 100;
 interface Draft {
   mode: Mode;
   height: number;
-  cells: string[];
+  cells: [string, string][];
+  brush: string;
+  background: string;
 }
 
 function loadDraft(): Draft | null {
   try {
     const raw = window.localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
-    const d = JSON.parse(raw) as Draft;
-    if (!Object.hasOwn(MODES, d.mode) || !Array.isArray(d.cells)) return null;
-    return { mode: d.mode, height: Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Number(d.height) || DEFAULT_HEIGHT)), cells: d.cells };
+    const d = JSON.parse(raw) as Partial<Draft> & { cells?: unknown[] };
+    if (!d.mode || !Object.hasOwn(MODES, d.mode) || !Array.isArray(d.cells)) return null;
+    const cells = d.cells
+      .map((c): [string, string] | null =>
+        typeof c === 'string' ? [c, FILLED] : Array.isArray(c) && typeof c[0] === 'string' && typeof c[1] === 'string' && isAllowed(c[1]) ? [c[0], c[1]] : null,
+      )
+      .filter((c) => c !== null);
+    return {
+      mode: d.mode,
+      height: Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Number(d.height) || DEFAULT_HEIGHT)),
+      cells,
+      brush: d.brush && isAllowed(d.brush) ? d.brush : FILLED,
+      background: d.background && (BACKGROUNDS as readonly string[]).includes(d.background) ? d.background : EMPTY,
+    };
   } catch {
     return null;
   }
 }
 
+function Glyph({ ch }: { ch: string }) {
+  return <span className={isBoxGlyph(ch) ? 'fit' : 'letter'}>{ch}</span>;
+}
+
+interface TileProps {
+  group: string;
+  ch: string;
+  checked: boolean;
+  onPick: (ch: string) => void;
+}
+
+function Tile({ group, ch, checked, onPick }: TileProps) {
+  return (
+    <label className={checked ? 'tile active' : 'tile'} title={charName(ch)}>
+      <input type="radio" name={group} value={ch} checked={checked} onChange={() => onPick(ch)} aria-label={charName(ch)} />
+      <Glyph ch={ch} />
+    </label>
+  );
+}
 export default function Creator({ turnstileSiteKey }: Props) {
   const draft = useMemo(loadDraft, []);
   const [mode, setMode] = useState<Mode>(draft?.mode ?? 'FHD');
   const [height, setHeight] = useState(draft?.height ?? DEFAULT_HEIGHT);
-  const [hist, setHist] = useState<History>(() => ({ past: [], present: new Set(draft?.cells ?? []), future: [] }));
+  const [brush, setBrush] = useState(draft?.brush ?? FILLED);
+  const [background, setBackground] = useState(draft?.background ?? EMPTY);
+  const [hist, setHist] = useState<History>(() => ({ past: [], present: new Map(draft?.cells ?? []), future: [] }));
   const cells = hist.present;
   const [cursor, setCursorState] = useState({ row: 0, col: 0 });
   const cursorRef = useRef(cursor);
@@ -78,10 +121,11 @@ export default function Creator({ turnstileSiteKey }: Props) {
   const clearTimer = useRef<number | undefined>(undefined);
 
   const width = MODES[mode];
-  const ascii = useMemo(() => toAscii(cells, width, height), [cells, width, height]);
+  const ascii = useMemo(() => toAscii(cells, width, height, background), [cells, width, height, background]);
   const count = useMemo(() => filledCount(cells, width, height), [cells, width, height]);
+  const blank = useMemo(() => new Set(ascii.replace(/\n/g, '')).size < 2, [ascii]);
 
-  const stroke = useRef<{ paint: boolean; pointerId: number } | null>(null);
+  const stroke = useRef<{ paint: boolean; char: string; pointerId: number } | null>(null);
   const noticeTimer = useRef<number | undefined>(undefined);
 
   const flash = useCallback((text: string, ok = true) => {
@@ -112,15 +156,15 @@ export default function Creator({ turnstileSiteKey }: Props) {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ mode, height, cells: [...cells] } satisfies Draft));
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ mode, height, cells: [...cells], brush, background } satisfies Draft));
     } catch {
       // storage unavailable (private mode): drafts are a convenience only
     }
-  }, [mode, height, cells]);
+  }, [mode, height, cells, brush, background]);
 
   const commit = useCallback((change: (draft: Cells) => void) => {
     setHist((h) => {
-      const next = new Set(h.present);
+      const next = new Map(h.present);
       change(next);
       return { past: [...h.past.slice(-(HISTORY_LIMIT - 1)), h.present], present: next, future: [] };
     });
@@ -154,10 +198,10 @@ export default function Creator({ turnstileSiteKey }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [undo, redo]);
 
-  const setCell = (set: Cells, row: number, col: number, paint: boolean) => {
+  const setCell = (map: Cells, row: number, col: number, char: string | null) => {
     const key = cellKey(row, col);
-    if (paint) set.add(key);
-    else set.delete(key);
+    if (char) map.set(key, char);
+    else map.delete(key);
   };
 
   const cellFromPoint = (x: number, y: number) => {
@@ -172,15 +216,16 @@ export default function Creator({ turnstileSiteKey }: Props) {
     const hit = cellFromPoint(e.clientX, e.clientY);
     if (!hit) return;
     e.preventDefault();
+    e.currentTarget.focus({ preventScroll: true });
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
       // capture is an optimisation; strokes still work through pointermove on the grid
     }
-    const paint = !cells.has(cellKey(hit.row, hit.col));
-    stroke.current = { paint, pointerId: e.pointerId };
+    const paint = cells.get(cellKey(hit.row, hit.col)) !== brush;
+    stroke.current = { paint, char: brush, pointerId: e.pointerId };
     setCursor(hit);
-    commit((next) => setCell(next, hit.row, hit.col, paint));
+    commit((next) => setCell(next, hit.row, hit.col, paint ? brush : null));
   };
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
@@ -189,10 +234,11 @@ export default function Creator({ turnstileSiteKey }: Props) {
     const hit = cellFromPoint(e.clientX, e.clientY);
     if (!hit) return;
     const key = cellKey(hit.row, hit.col);
+    const want = s.paint ? s.char : undefined;
     setHist((h) => {
-      if (h.present.has(key) === s.paint) return h;
-      const next = new Set(h.present);
-      setCell(next, hit.row, hit.col, s.paint);
+      if (h.present.get(key) === want) return h;
+      const next = new Map(h.present);
+      setCell(next, hit.row, hit.col, want ?? null);
       return { ...h, present: next };
     });
   };
@@ -213,15 +259,33 @@ export default function Creator({ turnstileSiteKey }: Props) {
       const [dr, dc] = moves[e.key];
       setCursor((c) => {
         const next = { row: Math.min(height - 1, Math.max(0, c.row + dr)), col: Math.min(width - 1, Math.max(0, c.col + dc)) };
-        setAnnouncement(`Row ${next.row + 1}, column ${next.col + 1}, ${cells.has(cellKey(next.row, next.col)) ? 'filled' : 'empty'}`);
+        const char = cells.get(cellKey(next.row, next.col));
+        setAnnouncement(`Row ${next.row + 1}, column ${next.col + 1}, ${char ? charName(char) : 'empty'}`);
         return next;
       });
     } else if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       const { row, col } = cursorRef.current;
-      const willFill = !cells.has(cellKey(row, col));
-      commit((next) => setCell(next, row, col, !next.has(cellKey(row, col))));
-      setAnnouncement(`Row ${row + 1}, column ${col + 1}, ${willFill ? 'filled' : 'empty'}`);
+      const willFill = cells.get(cellKey(row, col)) !== brush;
+      commit((next) => setCell(next, row, col, willFill ? brush : null));
+      setAnnouncement(`Row ${row + 1}, column ${col + 1}, ${willFill ? charName(brush) : 'empty'}`);
+    } else if (LETTER.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      const { row, col } = cursorRef.current;
+      commit((next) => setCell(next, row, col, e.key));
+      const last = row === height - 1 && col === width - 1;
+      setCursor(last ? { row, col } : col + 1 < width ? { row, col: col + 1 } : { row: row + 1, col: 0 });
+      setAnnouncement(`Row ${row + 1}, column ${col + 1}, ${e.key}`);
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      e.preventDefault();
+      let { row, col } = cursorRef.current;
+      if (e.key === 'Backspace') {
+        if (col > 0) col -= 1;
+        else if (row > 0) [row, col] = [row - 1, width - 1];
+        setCursor({ row, col });
+      }
+      commit((next) => setCell(next, row, col, null));
+      setAnnouncement(`Row ${row + 1}, column ${col + 1}, empty`);
     }
   };
 
@@ -234,8 +298,10 @@ export default function Creator({ turnstileSiteKey }: Props) {
       for (let r = 0; r < height; r++)
         for (let c = 0; c < width; c++) {
           const key = cellKey(r, c);
-          if (next.has(key)) next.delete(key);
-          else next.add(key);
+          const char = next.get(key);
+          if (!char) next.set(key, FILLED);
+          else if (char === FILLED) next.delete(key);
+          else if (INVERSE[char]) next.set(key, INVERSE[char]);
         }
     });
   };
@@ -297,6 +363,40 @@ export default function Creator({ turnstileSiteKey }: Props) {
             onChange={(e) => setHeight(Number(e.target.value))}
           />
         </div>
+        <div className="brushes">
+          <div className="brush-head">
+            <span className="tile big" aria-hidden="true">
+              <Glyph ch={brush} />
+            </span>
+            <p>
+              <span className="group-label">Brush</span>
+              <strong>{charName(brush)}</strong>
+            </p>
+            <fieldset className="background">
+              <legend className="group-label">Background</legend>
+              <div className="tiles">
+                {BACKGROUNDS.map((ch) => (
+                  <Tile key={ch} group="background" ch={ch} checked={ch === background} onPick={setBackground} />
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <fieldset className="palette">
+            <legend className="sr-only">Brush</legend>
+            {PALETTE.map((group) => (
+              <div key={group.label} className="tile-group" role="group" aria-label={group.label}>
+                <span className="group-label" aria-hidden="true">
+                  {group.label}
+                </span>
+                <div className="tiles">
+                  {group.chars.map((ch) => (
+                    <Tile key={ch} group="brush" ch={ch} checked={ch === brush} onPick={setBrush} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </fieldset>
+        </div>
         <div className="tools">
           <button type="button" className="btn ghost" onClick={undo} disabled={!hist.past.length} title="Undo (Ctrl+Z)">
             Undo
@@ -320,7 +420,7 @@ export default function Creator({ turnstileSiteKey }: Props) {
             style={{ ['--cols' as string]: width }}
             role="application"
             aria-roledescription="drawing grid"
-            aria-label={`Drawing grid, ${width} by ${height}. Arrow keys move, space toggles a cell.`}
+            aria-label={`Drawing grid, ${width} by ${height}. Arrow keys move, space toggles a cell, letters and digits type into it.`}
             tabIndex={0}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -331,15 +431,17 @@ export default function Creator({ turnstileSiteKey }: Props) {
           >
             {rows.map((r) =>
               cols.map((c) => {
-                const on = cells.has(cellKey(r, c));
+                const char = cells.get(cellKey(r, c));
                 const focus = r === cursor.row && c === cursor.col;
                 return (
                   <div
                     key={`${r}-${c}`}
                     data-row={r}
                     data-col={c}
-                    className={`cell${on ? ' on' : ''}${focus ? ' cursor' : ''}`}
-                  />
+                    className={`cell${char === FILLED ? ' on' : char ? ' glyph' : ''}${focus ? ' cursor' : ''}`}
+                  >
+                    {char && char !== FILLED ? <Glyph ch={char} /> : null}
+                  </div>
                 );
               }),
             )}
@@ -349,7 +451,7 @@ export default function Creator({ turnstileSiteKey }: Props) {
           {announcement}
         </p>
         <p className="hint">
-          {count} of {width * height} cells · undo with Ctrl+Z
+          {count} of {width * height} cells · click a cell and type to add letters · undo with Ctrl+Z
         </p>
       </section>
 
@@ -357,10 +459,10 @@ export default function Creator({ turnstileSiteKey }: Props) {
         <div className="output-head">
           <h2>Output</h2>
           <div className="tools">
-            <button type="button" className="btn" onClick={copy} disabled={!count}>
+            <button type="button" className="btn" onClick={copy} disabled={blank}>
               Copy for chat
             </button>
-            <button type="button" className="btn ghost" onClick={download} disabled={!count}>
+            <button type="button" className="btn ghost" onClick={download} disabled={blank}>
               Download .txt
             </button>
           </div>
@@ -371,7 +473,7 @@ export default function Creator({ turnstileSiteKey }: Props) {
         </p>
       </section>
 
-      <SubmitForm ascii={ascii} width={width} height={height} empty={!count} siteKey={turnstileSiteKey} />
+      <SubmitForm ascii={ascii} width={width} height={height} empty={blank} siteKey={turnstileSiteKey} />
     </div>
   );
 }

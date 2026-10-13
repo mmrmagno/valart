@@ -14,6 +14,13 @@ const (
 	nameMax = 60
 )
 
+// Must match src/lib/palette.json (TestPaletteMatchesSite checks it).
+const palette = "█▓▒░■▀▄▌▐▖▗▘▝▙▛▜▟▚▞" + "─│┌┐└┘├┤┬┴┼" + "═║╔╗╚╝╠╣╦╩╬" + "╒╕╘╛╞╡╤╧╪╓╖╙╜╟╢╥╨╫"
+
+func allowedCell(r rune) bool {
+	return r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || strings.ContainsRune(palette, r)
+}
+
 var (
 	widths = map[int]bool{26: true, 27: true}
 	// Latin script only (accents allowed): no homoglyph scripts, no invisible Hangul fillers, no RTL reordering.
@@ -63,22 +70,19 @@ func (s *Submission) Validate() error {
 	if len(lines) != s.Height {
 		return fmt.Errorf("art must have %d lines", s.Height)
 	}
-	any := false
+	used := map[rune]bool{}
 	for _, line := range lines {
 		if utf8.RuneCountInString(line) != s.Width {
 			return fmt.Errorf("every line must be %d cells wide", s.Width)
 		}
 		for _, r := range line {
-			switch r {
-			case filled:
-				any = true
-			case empty:
-			default:
-				return errors.New("art may only contain drawn and empty cells")
+			if !allowedCell(r) {
+				return errors.New("art may only contain characters from the drawing tool")
 			}
+			used[r] = true
 		}
 	}
-	if !any {
+	if len(used) < 2 {
 		return errors.New("art is empty")
 	}
 	return nil
