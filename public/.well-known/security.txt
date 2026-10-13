@@ -1,0 +1,4 @@
+Contact: https://github.com/mmrmagno/valart/security/advisories/new
+Expires: 2027-10-14T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://val.marc-os.com/.well-known/security.txt
