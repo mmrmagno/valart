@@ -30,6 +30,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).toString()
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta name="author" content={SITE.author} />
+    <meta name="robots" content="noai, noimageai" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <slot name="head" />
   </head>
   <body>

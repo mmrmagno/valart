@@ -8,3 +8,4 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 add_header Cross-Origin-Opener-Policy "same-origin" always;
 add_header Cross-Origin-Resource-Policy "same-origin" always;
 add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+add_header X-Robots-Tag "noai, noimageai" always;
