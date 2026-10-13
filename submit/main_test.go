@@ -15,6 +15,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -53,7 +54,13 @@ func TestValidateAcceptsAndRejects(t *testing.T) {
 		"line count":     func(s *Submission) { s.Height = 4 },
 		"ragged line":    func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "", 1) },
 		"foreign char":   func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "<", 1) },
+		"tab":            func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "\t", 1) },
+		"emoji":          func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "🙂", 1) },
+		"backtick":       func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "`", 1) },
+		"accent":         func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "é", 1) },
+		"at sign":        func(s *Submission) { s.Art = strings.Replace(s.Art, string(empty), "@", 1) },
 		"blank art":      func(s *Submission) { s.Art = strings.ReplaceAll(s.Art, string(filled), string(empty)) },
+		"one char only":  func(s *Submission) { s.Art = strings.ReplaceAll(s.Art, string(empty), string(filled)) },
 		"markdown fence": func(s *Submission) { s.Name = "```" },
 	}
 	for name, mutate := range cases {
@@ -62,6 +69,42 @@ func TestValidateAcceptsAndRejects(t *testing.T) {
 		if err := s.Validate(); err == nil {
 			t.Errorf("%s: accepted", name)
 		}
+	}
+}
+
+func TestValidateAcceptsGalleryCharacters(t *testing.T) {
+	rows := []string{
+		"▒▒▒▐███▀▀▀▀▀██▀▀▀▀▀███▌▒▒▒",
+		"║──■─■─■──────▝███▄█▌──▀█▐",
+		"╚══▀═▀═▀════════════▀▘═══╝",
+		"──▜███▛──▗▙▟▖▚▞─╔╗▓▓░░────",
+		"│┤╡╢╖╕╣╜╛┐└┴┬├┼╞╟╩╦╠╬╧╨╤╥╙",
+		"╘╒╓╫╪┘┌──GG──ez──Valorant9",
+		"──────────────────────────",
+	}
+	s := validSub()
+	s.Height = len(rows)
+	s.Art = strings.Join(rows, "\n")
+	if err := s.Validate(); err != nil {
+		t.Fatalf("gallery characters rejected: %v", err)
+	}
+}
+
+func TestPaletteMatchesSite(t *testing.T) {
+	raw, err := os.ReadFile("../src/lib/palette.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var groups []struct{ Chars string }
+	if err := json.Unmarshal(raw, &groups); err != nil {
+		t.Fatal(err)
+	}
+	var site strings.Builder
+	for _, g := range groups {
+		site.WriteString(g.Chars)
+	}
+	if site.String() != palette {
+		t.Fatalf("palette drift:\nsite %s\ngo   %s", site.String(), palette)
 	}
 }
 
@@ -282,7 +325,7 @@ func TestSubmitOpensAPullRequest(t *testing.T) {
 func TestInvalidInputNeverReachesGitHubOrTurnstile(t *testing.T) {
 	api, gh, ts := newTestServer(t)
 	bad := validSub()
-	bad.Art = strings.Replace(bad.Art, string(empty), "x", 1)
+	bad.Art = strings.Replace(bad.Art, string(empty), "<", 1)
 	for _, body := range []string{encode(bad), `not json`, `{"name":"a","extra":1}`, encode(Submission{})} {
 		if code, _ := post(t, api, body, "203.0.113.9"); code != http.StatusBadRequest {
 			t.Errorf("body %.40q got %d, want 400", body, code)

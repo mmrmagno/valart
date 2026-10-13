@@ -1,0 +1,6 @@
+[
+  { "label": "Blocks", "chars": "█▓▒░■▀▄▌▐▖▗▘▝▙▛▜▟▚▞" },
+  { "label": "Single lines", "chars": "─│┌┐└┘├┤┬┴┼" },
+  { "label": "Double lines", "chars": "═║╔╗╚╝╠╣╦╩╬" },
+  { "label": "Mixed lines", "chars": "╒╕╘╛╞╡╤╧╪╓╖╙╜╟╢╥╨╫" }
+]
